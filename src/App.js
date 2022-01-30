@@ -4,43 +4,41 @@ import { useState, useEffect } from "react";
 
 function App() {
   const [loading, setLoading] = useState(true);
-  const [coins, setCoins] = useState([]);
-  const [selectedCoin, setSeletedCoin] = useState("");
-  const [myMoney, setMyMoney] = useState(0);
-
-  const onSelectCoin = (event) => {
-    setSeletedCoin(event.target.value);
+  const [movies, setMovies] = useState([]);
+  const getMovies = async () => {
+    const json = await (
+      await fetch(
+        `https://yts.mx/api/v2/list_movies.json?minimum_rating=9&sort_by=year`
+      )
+    ).json();
+    setMovies(json.data.movies);
+    setLoading(false);
   };
-
-  const putMyMoney = (event) => {
-    setMyMoney(event.target.value);
-  };
-
   useEffect(() => {
-    fetch("https://api.coinpaprika.com/v1/tickers")
-      .then((response) => response.json())
-      .then((json) => {
-        setCoins(json);
-        setLoading(false);
-      });
+    getMovies();
   }, []);
   return (
     <div>
-      {console.log(selectedCoin)}
-      <h1>Thc Coins!({coins.length === 0 ? "Loading" : coins.length})</h1>
-      {loading ? <strong>Loading...</strong> : null}
-      <select onChange={onSelectCoin}>
-        {coins.map((coin) => (
-          <option key={coin.id} value={coin.quotes.USD.price}>
-            {coin.name}
-          </option>
-        ))}
-      </select>
-      <br></br>
-      <label>보유 USD</label>
-      <input value={myMoney} onChange={putMyMoney} type="number"></input>
-      <label>구매가능 코인 수량</label>
-      <input value={myMoney / selectedCoin} disabled="true"></input>
+      {loading ? (
+        <h1>Loading...</h1>
+      ) : (
+        <div>
+          {movies.map((movie) => (
+            <div key={movie.id}>
+              <img src={movie.medium_cover_image} />
+              <h2>{movie.title}</h2>
+              <div>{movie.summary}</div>
+              <ul>
+                <li>
+                  {movie.genres.map((genre) => (
+                    <li key={genre}>{genre}</li>
+                  ))}
+                </li>
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
